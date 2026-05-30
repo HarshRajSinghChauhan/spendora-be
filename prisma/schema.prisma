@@ -1,0 +1,173 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+// generator client {
+//   provider = "prisma-client"
+//   output   = "../src/generated/prisma"
+// }
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum BudgetType {
+  WEEKLY
+  MONTHLY
+}
+
+enum GoalStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+model User {
+  id String @id @default(uuid())
+
+  name     String
+  email    String @unique
+  password String
+
+  role Role @default(USER)
+
+  isBlocked Boolean @default(false)
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+  refreshToken String?
+
+  transactions      Transaction[]
+  createdCategories Category[]
+  budgets           Budget[]
+  goals             Goal[]
+  loginHistory      LoginHistory[]
+
+  @@map("users")
+}
+
+model Category {
+  id String @id @default(uuid())
+
+  name String
+
+  type TransactionType
+
+  isGlobal Boolean @default(false)
+
+  createdById String?
+
+  createdBy User? @relation(fields: [createdById], references: [id])
+
+  isDisabled Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+  budgets      Budget[]
+
+  @@index([createdById])
+  @@map("categories")
+}
+
+model Transaction {
+  id String @id @default(uuid())
+
+  title String?
+
+  amount Decimal @default(0) @db.Decimal(12, 2)
+
+  type TransactionType
+
+  notes String?
+
+  transactionDate DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([transactionDate])
+  @@map("transactions")
+}
+
+model Budget {
+  id          String     @id @default(uuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  categoryId  String?
+  category    Category?  @relation(fields: [categoryId], references: [id])
+  limitAmount Decimal    @default(0) @db.Decimal(12, 2)
+  budgetType  BudgetType
+  startDate   DateTime
+  endDate     DateTime
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([categoryId])
+  @@map("budgets")
+}
+
+model Goal {
+  id           String     @id @default(uuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  title        String
+  targetAmount Decimal    @default(0) @db.Decimal(12, 2)
+  savedAmount  Decimal    @default(0) @db.Decimal(12, 2)
+  deadline     DateTime
+  status       GoalStatus @default(IN_PROGRESS)
+  createdAt    DateTime   @default(now())
+
+  @@index([userId])
+  @@map("goals")
+}
+
+model LoginHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  ipAddress String
+  device    String
+  loginTime DateTime @default(now())
+
+  @@index([userId])
+  @@map("login_history")
+}
+
+model ApiLog {
+  id           String   @id @default(uuid())
+  endpoint     String
+  method       String
+  statusCode   Int
+  responseTime Int
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("api_logs")
+}
