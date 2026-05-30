@@ -1,26 +1,18 @@
-import dotenv from "dotenv";
-import pg from "pg";
-
-dotenv.config();
-
-const { Pool } = pg;
-
-const client = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
+import prisma from "./prisma.js";
 
 const dbConnect = async () => {
   try {
-    const connection = await client.connect();
+
+    await prisma.$connect();
+
     console.log("Database connected");
-    connection.release(); 
+
   } catch (err) {
-    console.log(err, "Cannot Connect to Database!");
+
+    console.error("Cannot connect to database:", err);
+
     process.exit(1);
   }
 };
 
-export { client, dbConnect };
+export default dbConnect;
