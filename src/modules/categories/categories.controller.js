@@ -1,6 +1,6 @@
-import categoriesService from "./categories.service";
+import categoriesService from "./categories.service.js";
 
-export const createCategory = async (req, res) => {
+const createCategory = async (req, res) => {
     try {
         const result = await categoriesService.createCategory(req.body);
         res.status(201).json({
@@ -17,7 +17,7 @@ export const createCategory = async (req, res) => {
     }
 };
 
-export const getAllCategories = async (req, res) => {
+const getAllCategories = async (req, res) => {
     try{
         const result = await categoriesService.getAllCategories(req.query);
         res.status(200).json({
@@ -31,4 +31,9 @@ export const getAllCategories = async (req, res) => {
             message: err.message
         })
     }
+}
+
+export default{
+    createCategory,
+    getAllCategories
 }
