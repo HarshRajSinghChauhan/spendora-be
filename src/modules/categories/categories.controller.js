@@ -19,7 +19,7 @@ const createCategory = async (req, res) => {
 
 const getAllCategories = async (req, res) => {
     try{
-        const result = await categoriesService.getAllCategories(req.query);
+        const result = await categoriesService.getAllCategories({...req.query, userId: req.user.id});
         res.status(200).json({
             success: true,
             message: "Categories fetched successfully",
