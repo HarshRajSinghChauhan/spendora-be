@@ -86,14 +86,14 @@ export const deleteCategoryById = async ({id, userId}) => {
         throw new Error("Category not found");
     }
 
-    // await prisma.category.update({
-    //     where: {
-    //         id
-    //     },
-    //     data: {
-    //         isDisabled: true
-    //     }
-    // });
+    await prisma.category.update({
+        where: {
+            id
+        },
+        data: {
+            isDisabled: true
+        }
+    });
 
     return category;
 }
