@@ -1,12 +1,12 @@
-import categoriesRespository from "./categories.respository.js";
+import categoriesRepository from "./categories.repository.js";
 export const createCategory = async (data) => {
-    const existingCategory = await categoriesRespository.findByNameandType(data);
+    const existingCategory = await categoriesRepository.findByNameandType(data);
 
     if(existingCategory){
         throw new Error(`Category ${data.name} already exists for ${data.type}`)
     }
 
-    const category = await categoriesRespository.createCategory(data);
+    const category = await categoriesRepository.createCategory(data);
     return {
         id: category.id,
         category_name: category.name,
@@ -17,7 +17,7 @@ export const createCategory = async (data) => {
 
 export const getAllCategories = async (data) => {
 
-    const result = await categoriesRespository.getAllCategories(data);
+    const result = await categoriesRepository.getAllCategories(data);
 
     return {
         categories: result.category.map((category) => ({
@@ -39,7 +39,7 @@ export const getAllCategories = async (data) => {
 };
 
 const getCategoryById = async (data) => {
-    const result = await categoriesRespository.getCategoryById(data);
+    const result = await categoriesRepository.getCategoryById(data);
     return {
         id: result.id,
         name: result.name,
@@ -49,7 +49,7 @@ const getCategoryById = async (data) => {
 }
 
 const deleteCategoryById = async (id) => {
-    const result = await categoriesRespository.deleteCategoryById(id);
+    const result = await categoriesRepository.deleteCategoryById(id);
     return {
         id: result.id,
         name: result.name,
