@@ -4,7 +4,7 @@ const validateTransaction = async ({ type, categoryId, userId }) => {
     const category = await prisma.category.findFirst({
         where: {
             id: categoryId,
-            userId,
+            createdById: userId,
             type,
         }
     });
@@ -73,6 +73,9 @@ const getAllTransactions = async ({ userId, type, from, to, page, limit }) => {
     if (to) {
         where.transactionDate.lte = new Date(to);
     }
+
+    page = Number(page);
+    limit = Number(limit);
 
     const skip = (page - 1) * limit;
 
