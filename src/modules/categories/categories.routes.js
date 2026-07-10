@@ -5,7 +5,10 @@ import { createCategorySchema } from './categories.validate.js';
 import auth from '../../middlewares/auth.middleware.js';
 const router = express.Router();
 
-router.post('/create-category', auth, validate(createCategorySchema), categoriesController.createCategory);
-router.get('/list-all-categories',auth, categoriesController.getAllCategories);
+router.post('/', auth, validate(createCategorySchema), categoriesController.createCategory);
+router.get('/',auth, categoriesController.getAllCategories);
+router.get('/:id', auth,categoriesController.getCategoryById);
+router.delete('/:id', auth,categoriesController.deleteCategoryById);
+
 
 export default router;
