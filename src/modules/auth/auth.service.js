@@ -1,4 +1,4 @@
-import authRespository from "./auth.repository.js";
+import authRepository from "./auth.repository.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import {
@@ -8,14 +8,14 @@ import {
 const saltRounds = 12;
 
 const register = async ({ name, email, password }) => {
-    const existingUser = await authRespository.findUserByEmail(email);
+    const existingUser = await authRepository.findUserByEmail(email);
 
     if (existingUser) {
         throw new Error("User already exists with this email, please log in.");
     }
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const newUser = await authRespository.create({ name, email, password: hashedPassword });
+    const newUser = await authRepository.create({ name, email, password: hashedPassword });
     return {
         id: newUser.id,
         name: newUser.name,
@@ -27,7 +27,7 @@ const register = async ({ name, email, password }) => {
 
 const login = async ({ email, password }) => {
 
-    const user = await authRespository.findUserByEmail(email);
+    const user = await authRepository.findUserByEmail(email);
 
     if (!user) {
         throw new Error("Invalid email or password.");
@@ -51,7 +51,7 @@ const login = async ({ email, password }) => {
     const refreshToken = generateRefreshToken(payload);
 
     const hashedRefreshToken = await bcrypt.hash(refreshToken, saltRounds);
-    await authRespository.updateRefreshToken(
+    await authRepository.updateRefreshToken(
         user.id,
         hashedRefreshToken
     );
@@ -88,7 +88,7 @@ const refreshToken = async ({ refreshToken }) => {
         throw new Error("Invalid or expired refresh token");
     }
 
-    const user = await authRespository.findUserById(decoded.id);
+    const user = await authRepository.findUserById(decoded.id);
 
     if (!user) {
         throw new Error("User not found");
@@ -117,7 +117,7 @@ const refreshToken = async ({ refreshToken }) => {
 };
 
 const logout = async (data) => {
-    await authRespository.clearRefreshToken(data);
+    await authRepository.clearRefreshToken(data);
     return {
         message: "Logged out successfully"
     };
