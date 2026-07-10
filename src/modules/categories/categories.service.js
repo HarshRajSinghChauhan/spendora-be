@@ -17,11 +17,10 @@ export const createCategory = async (data) => {
 
 export const getAllCategories = async (data) => {
 
-    const result =
-        await categoriesRepository.getAllCategories(data);
+    const result = await categoriesRespository.getAllCategories(data);
 
     return {
-        categories: result.categories.map((category) => ({
+        categories: result.category.map((category) => ({
             id: category.id,
             name: category.name,
             type: category.type,
@@ -39,7 +38,29 @@ export const getAllCategories = async (data) => {
     };
 };
 
+const getCategoryById = async (data) => {
+    const result = await categoriesRespository.getCategoryById(data);
+    return {
+        id: result.id,
+        name: result.name,
+        type: result.type,
+        isGlobal: result.isGlobal
+    }
+}
+
+const deleteCategoryById = async (id) => {
+    const result = await categoriesRespository.deleteCategoryById(id);
+    return {
+        id: result.id,
+        name: result.name,
+        type: result.type,
+        isGlobal: result.isGlobal
+    }
+}
+
 export default{
     createCategory,
-    getAllCategories
+    getAllCategories,
+    getCategoryById,
+    deleteCategoryById
 }

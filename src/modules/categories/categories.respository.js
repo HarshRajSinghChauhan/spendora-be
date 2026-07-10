@@ -58,9 +58,50 @@ export const getAllCategories = async ({ userId, type, page = 1, limit = 10 }) =
 
 }
 
+export const getCategoryById = async ({ id, userId }) => {
+    const category = await prisma.category.findUnique({
+        where: { id }
+    });
 
-export default{
+    if (!category) {
+        throw new Error("Category not found");
+    }
+
+    if (category.createdById !== userId) {
+        throw new Error("Unauthorized");
+    }
+    return category;
+}
+
+export const deleteCategoryById = async ({id, userId}) => {
+    const category = await prisma.category.findFirst({
+        where: {
+            id,
+            createdById: userId,
+            isDisabled: false
+        }
+    });
+
+    if (!category) {
+        throw new Error("Category not found");
+    }
+
+    // await prisma.category.update({
+    //     where: {
+    //         id
+    //     },
+    //     data: {
+    //         isDisabled: true
+    //     }
+    // });
+
+    return category;
+}
+
+export default {
     findByNameandType,
     createCategory,
-    getAllCategories
+    getAllCategories,
+    getCategoryById,
+    deleteCategoryById
 }
