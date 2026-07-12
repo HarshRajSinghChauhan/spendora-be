@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.post('/', auth, validate(createTransactionSchema), transactionsController.createTransaction);
 router.get('/', auth, transactionsController.getAllTransactions);
-router.put('/:id', auth, validate(updateTransactionSchema), transactionsController.updateTransaction);
+router.patch('/:id', auth, validate(updateTransactionSchema), transactionsController.updateTransaction);
 router.delete('/:id', auth, transactionsController.deleteTransaction);
 
 export default router;
