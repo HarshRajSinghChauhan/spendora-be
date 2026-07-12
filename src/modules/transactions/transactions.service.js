@@ -2,18 +2,16 @@ import transactionRepository from "./transaction.repository.js";
 
 const createTransaction = async (data) => {
     const validTransaction = await transactionRepository.validateTransaction(data);
-
     if (!validTransaction) {
         throw new Error("Invalid transaction data");
     }
 
-    const transaction = await transactionRepository.createTransaction(data);
-    return { data: transaction };
+    return await transactionRepository.createTransaction(data);
+
 }
 
 const getAllTransactions = async (data) => {
-    const { transactions, totalRecords } =
-        await transactionRepository.getAllTransactions(data);
+    const { transactions, totalRecords } = await transactionRepository.getAllTransactions(data);
 
     const page = Number(data.page || 1);
     const limit = Number(data.limit || 10);

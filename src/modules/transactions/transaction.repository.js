@@ -4,7 +4,7 @@ const validateTransaction = async ({ type, categoryId, userId }) => {
     const category = await prisma.category.findFirst({
         where: {
             id: categoryId,
-            userId,
+            createdById: userId,
             type,
         }
     });
@@ -67,12 +67,18 @@ const getAllTransactions = async ({ userId, type, from, to, page, limit }) => {
     }
 
     if (from) {
-        where.transactionDate.gte = new Date(from);
+        const fromDate = new Date(from);
+        fromDate.setUTCHours(0, 0, 0, 0);
+        where.transactionDate.gte = fromDate;
+    }
+    if (to) {
+        const toDate = new Date(to);
+        toDate.setUTCHours(23, 59, 59, 999);
+        where.transactionDate.lte = toDate;
     }
 
-    if (to) {
-        where.transactionDate.lte = new Date(to);
-    }
+    page = Number(page);
+    limit = Number(limit);
 
     const skip = (page - 1) * limit;
 
@@ -126,19 +132,30 @@ const updateTransaction = async ({
     transactionDate,
 }) => {
 
+    const updateData = {};
+
+    if (amount !== undefined) updateData.amount = amount;
+    if (type !== undefined) updateData.type = type;
+    if (notes !== undefined) updateData.notes = notes;
+    if (categoryId !== undefined) updateData.categoryId = categoryId;
+    if (title !== undefined) updateData.title = title;
+    if (transactionDate !== undefined) {
+        updateData.transactionDate = transactionDate;
+    }
+
+    return prisma.transaction.update({
+        where: {
+            id
+        },
+        data: updateData
+    });
+
     return prisma.transaction.update({
         where: {
             id,
             userId,
         },
-        data: {
-            amount,
-            type,
-            notes,
-            categoryId,
-            title,
-            transactionDate
-        },
+        data: updateData,
         include: {
             category: {
                 select: {
