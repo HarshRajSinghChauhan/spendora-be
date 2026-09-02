@@ -4,6 +4,7 @@ import cors from "cors";
 import authRoutes from "./modules/auth/auth.routes.js";
 import categoriesRoutes from "./modules/categories/categories.routes.js";
 import transactionsRoutes from "./modules/transactions/transactions.routes.js";
+import swaggerRoutes from "./docs/swaggerRoutes.js";
 
 const app = express();
 
@@ -17,6 +18,9 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// Swagger Documentation
+app.use(swaggerRoutes);
 
 // Routes
 app.use("/api/auth", authRoutes);
