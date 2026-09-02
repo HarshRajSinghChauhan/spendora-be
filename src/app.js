@@ -8,6 +8,9 @@ import swaggerRoutes from "./docs/swaggerRoutes.js";
 
 const app = express();
 
+// Trust reverse proxy headers (Render, Heroku, etc.)
+app.set("trust proxy", 1);
+
 // Middlewares
 app.use(express.json());
 

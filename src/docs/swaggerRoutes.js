@@ -17,9 +17,18 @@ router.get("/api-docs.json", (req, res) => {
   res.json(swaggerDocument);
 });
 
+const swaggerOptions = {
+  customCssUrl: "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css",
+  customJs: [
+    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-bundle.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-standalone-preset.js"
+  ],
+  customSiteTitle: "Spendora API Documentation"
+};
+
 // Serve Swagger UI
 if (swaggerUi) {
-  router.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  router.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerOptions));
 } else {
   router.get("/api-docs", (req, res) => {
     const html = `<!DOCTYPE html>
