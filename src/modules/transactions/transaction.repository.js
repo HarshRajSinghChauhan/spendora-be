@@ -1,25 +1,47 @@
 import prisma from "../../config/prisma.js";
 
+const isValidUUID = (uuid) => {
+    return typeof uuid === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid);
+};
+
 const validateTransaction = async ({ type, categoryId, userId }) => {
+    if (!isValidUUID(categoryId)) {
+        return null;
+    }
+
+    const where = {
+        id: categoryId,
+        isDisabled: false,
+        OR: [
+            { isGlobal: true },
+            { createdById: userId }
+        ]
+    };
+
+    if (type) {
+        where.type = type;
+    }
+
     const category = await prisma.category.findFirst({
-        where: {
-            id: categoryId,
-            createdById: userId,
-            type,
-        }
+        where
     });
 
     return category;
 };
 
 const findTransactionById = async ({ id, userId }) => {
+    if (!isValidUUID(id)) {
+        return null;
+    }
+
     return await prisma.transaction.findFirst({
         where: {
             id,
             userId
         }
-    })
-}
+    });
+};
+
 const createTransaction = async ({
     amount,
     type,
@@ -29,7 +51,6 @@ const createTransaction = async ({
     title,
     transactionDate
 }) => {
-
     return await prisma.transaction.create({
         data: {
             amount,
@@ -38,9 +59,8 @@ const createTransaction = async ({
             categoryId,
             userId,
             title,
-            transactionDate
+            transactionDate: transactionDate ? new Date(transactionDate) : undefined
         },
-
         include: {
             category: {
                 select: {
@@ -50,10 +70,9 @@ const createTransaction = async ({
             }
         }
     });
-
 };
 
-const getAllTransactions = async ({ userId, type, from, to, page, limit }) => {
+const getAllTransactions = async ({ userId, type, from, to, page = 1, limit = 10 }) => {
     const where = {
         userId
     };
@@ -77,19 +96,15 @@ const getAllTransactions = async ({ userId, type, from, to, page, limit }) => {
         where.transactionDate.lte = toDate;
     }
 
-    page = Number(page);
-    limit = Number(limit);
-
-    page = Number(page);
-    limit = Number(limit);
-
-    const skip = (page - 1) * limit;
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 10;
+    const skip = (pageNum - 1) * limitNum;
 
     const [transactions, totalRecords] = await Promise.all([
         prisma.transaction.findMany({
             where,
             skip,
-            take: limit,
+            take: limitNum,
             orderBy: {
                 transactionDate: "desc"
             },
@@ -113,20 +128,18 @@ const getAllTransactions = async ({ userId, type, from, to, page, limit }) => {
         transactions,
         totalRecords,
     };
-}
+};
 
-const deleteTransaction = async ({ id, userId }) => {
+const deleteTransaction = async ({ id }) => {
     return await prisma.transaction.delete({
         where: {
-            id,
-            userId
+            id
         }
-    })
-}
+    });
+};
 
 const updateTransaction = async ({
     id,
-    userId,
     amount,
     type,
     notes,
@@ -134,7 +147,6 @@ const updateTransaction = async ({
     title,
     transactionDate,
 }) => {
-
     const updateData = {};
 
     if (amount !== undefined) updateData.amount = amount;
@@ -143,34 +155,16 @@ const updateTransaction = async ({
     if (categoryId !== undefined) updateData.categoryId = categoryId;
     if (title !== undefined) updateData.title = title;
     if (transactionDate !== undefined) {
-        updateData.transactionDate = transactionDate;
+        updateData.transactionDate = new Date(transactionDate);
     }
 
-    return prisma.transaction.update({
+    return await prisma.transaction.update({
         where: {
             id
         },
         data: updateData
     });
-
-    return prisma.transaction.update({
-        where: {
-            id,
-            userId,
-        },
-        data: updateData,
-        include: {
-            category: {
-                select: {
-                    id: true,
-                    name: true
-                }
-            }
-        }
-    });
-
 };
-
 
 export default {
     createTransaction,
