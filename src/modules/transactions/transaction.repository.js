@@ -100,7 +100,12 @@ const getAllTransactions = async ({ userId, type, from, to, page = 1, limit = 10
     const limitNum = Number(limit) || 10;
     const skip = (pageNum - 1) * limitNum;
 
-    const [transactions, totalRecords] = await Promise.all([
+    const summaryWhere = {
+        userId,
+        ...(where.transactionDate ? { transactionDate: where.transactionDate } : {})
+    };
+
+    const [transactions, totalRecords, summaryStats] = await Promise.all([
         prisma.transaction.findMany({
             where,
             skip,
@@ -121,12 +126,21 @@ const getAllTransactions = async ({ userId, type, from, to, page = 1, limit = 10
 
         prisma.transaction.count({
             where
+        }),
+
+        prisma.transaction.groupBy({
+            by: ["type"],
+            where: summaryWhere,
+            _sum: {
+                amount: true
+            }
         })
     ]);
 
     return {
         transactions,
         totalRecords,
+        summaryStats
     };
 };
 
