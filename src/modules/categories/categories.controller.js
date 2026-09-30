@@ -66,9 +66,30 @@ const deleteCategoryById = async (req, res) =>{
     }
 }
 
-export default{
+const updateCategoryById = async (req, res) => {
+    try {
+        const result = await categoriesService.updateCategoryById({
+            id: req.params.id,
+            ...req.body,
+            userId: req.user.id
+        });
+        res.status(200).json({
+            success: true,
+            message: "Category updated successfully",
+            data: result
+        });
+    } catch (err) {
+        res.status(400).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
+export default {
     createCategory,
     getAllCategories,
     deleteCategoryById,
-    getCategoryById
-}
+    getCategoryById,
+    updateCategoryById
+};

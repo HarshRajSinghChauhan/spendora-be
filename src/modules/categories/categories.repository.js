@@ -98,10 +98,34 @@ export const deleteCategoryById = async ({id, userId}) => {
     return category;
 }
 
+export const updateCategoryById = async ({ id, userId, name, type }) => {
+    const category = await prisma.category.findFirst({
+        where: {
+            id,
+            createdById: userId,
+            isDisabled: false
+        }
+    });
+
+    if (!category) {
+        throw new Error("Category not found or unauthorized");
+    }
+
+    const data = {};
+    if (name) data.name = name;
+    if (type) data.type = type;
+
+    return await prisma.category.update({
+        where: { id },
+        data
+    });
+};
+
 export default {
     findByNameandType,
     createCategory,
     getAllCategories,
     getCategoryById,
-    deleteCategoryById
-}
+    deleteCategoryById,
+    updateCategoryById
+};
