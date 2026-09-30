@@ -28,11 +28,11 @@ export const getAllCategories = async (data) => {
         })),
 
         pagination: {
-            page: data.page,
-            limit: data.limit,
+            page: Number(data.page) || 1,
+            limit: Number(data.limit) || 10,
             totalRecords: result.totalRecords,
             totalPages: Math.ceil(
-                result.totalRecords / data.limit
+                result.totalRecords / (Number(data.limit) || 10)
             )
         }
     };
@@ -48,19 +48,32 @@ const getCategoryById = async (data) => {
     }
 }
 
-const deleteCategoryById = async (id) => {
-    const result = await categoriesRepository.deleteCategoryById(id);
+export const updateCategoryById = async (data) => {
+    if (data.name && data.type) {
+        const existing = await categoriesRepository.findByNameandType({
+            name: data.name,
+            type: data.type,
+            createdById: data.userId
+        });
+
+        if (existing && existing.id !== data.id) {
+            throw new Error(`Category ${data.name} already exists for ${data.type}`);
+        }
+    }
+
+    const result = await categoriesRepository.updateCategoryById(data);
     return {
         id: result.id,
         name: result.name,
         type: result.type,
         isGlobal: result.isGlobal
-    }
-}
+    };
+};
 
-export default{
+export default {
     createCategory,
     getAllCategories,
     getCategoryById,
-    deleteCategoryById
-}
+    deleteCategoryById,
+    updateCategoryById
+};
