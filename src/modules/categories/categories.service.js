@@ -48,6 +48,16 @@ const getCategoryById = async (data) => {
     }
 }
 
+export const deleteCategoryById = async (data) => {
+    const result = await categoriesRepository.deleteCategoryById(data);
+    return {
+        id: result.id,
+        name: result.name,
+        type: result.type,
+        isGlobal: result.isGlobal
+    };
+};
+
 export const updateCategoryById = async (data) => {
     if (data.name && data.type) {
         const existing = await categoriesRepository.findByNameandType({
