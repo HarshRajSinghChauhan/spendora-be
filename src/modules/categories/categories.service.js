@@ -28,11 +28,11 @@ export const getAllCategories = async (data) => {
         })),
 
         pagination: {
-            page: data.page,
-            limit: data.limit,
+            page: Number(data.page) || 1,
+            limit: Number(data.limit) || 10,
             totalRecords: result.totalRecords,
             totalPages: Math.ceil(
-                result.totalRecords / data.limit
+                result.totalRecords / (Number(data.limit) || 10)
             )
         }
     };

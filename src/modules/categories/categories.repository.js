@@ -22,6 +22,10 @@ export const createCategory = async ({ name, type, createdById }) => {
 }
 
 export const getAllCategories = async ({ userId, type, page = 1, limit = 10 }) => {
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 10;
+    const skip = (pageNum - 1) * limitNum;
+
     const where = {
         isDisabled: false,
 
@@ -31,7 +35,6 @@ export const getAllCategories = async ({ userId, type, page = 1, limit = 10 }) =
         ]
     };
 
-    const skip = (page - 1) * limit;
     if (type) {
         where.type = type;
     }
@@ -40,7 +43,7 @@ export const getAllCategories = async ({ userId, type, page = 1, limit = 10 }) =
         prisma.category.findMany({
             where,
             skip,
-            take: limit,
+            take: limitNum,
             orderBy: {
                 name: "asc"
             }
@@ -54,9 +57,8 @@ export const getAllCategories = async ({ userId, type, page = 1, limit = 10 }) =
     return {
         category,
         totalRecords
-    }
-
-}
+    };
+};
 
 export const getCategoryById = async ({ id, userId }) => {
     const category = await prisma.category.findUnique({
