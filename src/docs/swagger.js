@@ -30,6 +30,10 @@ export const swaggerDocument = {
     {
       name: "Transactions",
       description: "Income and expense transactions tracking"
+    },
+    {
+      name: "Budgets",
+      description: "Budget limits, periods, and spending progress tracking"
     }
   ],
   components: {
@@ -360,6 +364,178 @@ export const swaggerDocument = {
             type: "string",
             format: "date-time",
             example: "2026-09-02T12:00:00.000Z"
+          }
+        }
+      },
+      Budget: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+            format: "uuid",
+            example: "b1c2d3e4-f5a6-7890-abcd-ef1234567890"
+          },
+          userId: {
+            type: "string",
+            format: "uuid",
+            example: "123e4567-e89b-12d3-a456-426614174000"
+          },
+          categoryId: {
+            type: "string",
+            format: "uuid",
+            nullable: true,
+            example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          category: {
+            type: "object",
+            nullable: true,
+            properties: {
+              id: {
+                type: "string",
+                format: "uuid",
+                example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+              },
+              name: {
+                type: "string",
+                example: "groceries"
+              },
+              type: {
+                type: "string",
+                enum: ["EXPENSE"],
+                example: "EXPENSE"
+              }
+            }
+          },
+          limitAmount: {
+            type: "number",
+            format: "float",
+            example: 500.00
+          },
+          budgetType: {
+            type: "string",
+            enum: ["WEEKLY", "MONTHLY"],
+            example: "MONTHLY"
+          },
+          isRecurring: {
+            type: "boolean",
+            example: true
+          },
+          startDate: {
+            type: "string",
+            format: "date-time",
+            example: "2026-10-01T00:00:00.000Z"
+          },
+          endDate: {
+            type: "string",
+            format: "date-time",
+            example: "2026-10-31T23:59:59.999Z"
+          },
+          spentAmount: {
+            type: "number",
+            format: "float",
+            example: 150.00
+          },
+          remainingAmount: {
+            type: "number",
+            format: "float",
+            example: 350.00
+          },
+          spentPercentage: {
+            type: "number",
+            format: "float",
+            example: 30.00
+          },
+          isExceeded: {
+            type: "boolean",
+            example: false
+          },
+          createdAt: {
+            type: "string",
+            format: "date-time",
+            example: "2026-10-01T00:00:00.000Z"
+          },
+          updatedAt: {
+            type: "string",
+            format: "date-time",
+            example: "2026-10-01T00:00:00.000Z"
+          }
+        }
+      },
+      CreateBudgetRequest: {
+        type: "object",
+        required: ["limitAmount", "budgetType"],
+        properties: {
+          categoryId: {
+            type: "string",
+            format: "uuid",
+            nullable: true,
+            example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          limitAmount: {
+            type: "number",
+            format: "float",
+            minimum: 0.01,
+            example: 500.00
+          },
+          budgetType: {
+            type: "string",
+            enum: ["WEEKLY", "MONTHLY"],
+            example: "MONTHLY"
+          },
+          isRecurring: {
+            type: "boolean",
+            default: false,
+            description: "If true, budget auto-rolls over to the next period (Sunday-Saturday for weekly, 1st-last day for monthly)",
+            example: true
+          },
+          startDate: {
+            type: "string",
+            format: "date",
+            description: "Optional: Start date (defaults to current week Sunday or 1st of month if omitted)",
+            example: "2026-10-01"
+          },
+          endDate: {
+            type: "string",
+            format: "date",
+            description: "Optional: End date (defaults to current week Saturday or end of month if omitted)",
+            example: "2026-10-31"
+          }
+        }
+      },
+      UpdateBudgetRequest: {
+        type: "object",
+        minProperties: 1,
+        properties: {
+          categoryId: {
+            type: "string",
+            format: "uuid",
+            nullable: true,
+            example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          limitAmount: {
+            type: "number",
+            format: "float",
+            minimum: 0.01,
+            example: 600.00
+          },
+          budgetType: {
+            type: "string",
+            enum: ["WEEKLY", "MONTHLY"],
+            example: "MONTHLY"
+          },
+          isRecurring: {
+            type: "boolean",
+            example: false
+          },
+          startDate: {
+            type: "string",
+            format: "date",
+            example: "2026-10-01"
+          },
+          endDate: {
+            type: "string",
+            format: "date",
+            example: "2026-10-31"
           }
         }
       }
@@ -1061,6 +1237,343 @@ export const swaggerDocument = {
           },
           "404": {
             description: "Transaction not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            description: "Unauthorized",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/budgets": {
+      post: {
+        tags: ["Budgets"],
+        summary: "Create a new budget",
+        description: "Creates a weekly or monthly budget limit. Can be assigned to a specific EXPENSE category or left blank for overall expenses.",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/CreateBudgetRequest"
+              }
+            }
+          }
+        },
+        responses: {
+          "201": {
+            description: "Budget created successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: { type: "boolean", example: true },
+                    message: { type: "string", example: "Budget created successfully" },
+                    data: { $ref: "#/components/schemas/Budget" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            description: "Validation error or overlapping budget",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            description: "Unauthorized",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      },
+      get: {
+        tags: ["Budgets"],
+        summary: "Get all budgets",
+        description: "Retrieves a paginated list of budgets for the authenticated user with spending progress calculations and totals.",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "page",
+            in: "query",
+            description: "Page number (default: 1)",
+            schema: {
+              type: "integer",
+              minimum: 1,
+              default: 1
+            }
+          },
+          {
+            name: "limit",
+            in: "query",
+            description: "Number of budgets per page (default: 10, max: 100)",
+            schema: {
+              type: "integer",
+              minimum: 1,
+              maximum: 100,
+              default: 10
+            }
+          },
+          {
+            name: "budgetType",
+            in: "query",
+            description: "Filter by budget type (WEEKLY, MONTHLY)",
+            schema: {
+              type: "string",
+              enum: ["WEEKLY", "MONTHLY"]
+            }
+          },
+          {
+            name: "categoryId",
+            in: "query",
+            description: "Filter by category UUID",
+            schema: {
+              type: "string",
+              format: "uuid"
+            }
+          },
+          {
+            name: "active",
+            in: "query",
+            description: "Filter only currently active budgets (true/false)",
+            schema: {
+              type: "boolean"
+            }
+          },
+          {
+            name: "isRecurring",
+            in: "query",
+            description: "Filter by recurring status (true/false)",
+            schema: {
+              type: "boolean"
+            }
+          }
+        ],
+        responses: {
+          "200": {
+            description: "Budgets fetched successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: { type: "boolean", example: true },
+                    message: { type: "string", example: "Budgets fetched successfully" },
+                    data: {
+                      type: "object",
+                      properties: {
+                        budgets: {
+                          type: "array",
+                          items: { $ref: "#/components/schemas/Budget" }
+                        },
+                        pagination: { $ref: "#/components/schemas/Pagination" },
+                        summary: {
+                          type: "object",
+                          properties: {
+                            totalBudgeted: { type: "number", example: 1500.00 },
+                            totalSpent: { type: "number", example: 620.50 },
+                            totalRemaining: { type: "number", example: 879.50 }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            description: "Invalid query parameters",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            description: "Unauthorized",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/budgets/{id}": {
+      get: {
+        tags: ["Budgets"],
+        summary: "Get budget by ID",
+        description: "Retrieves a single budget with spending progress details.",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            description: "Budget UUID",
+            schema: {
+              type: "string",
+              format: "uuid"
+            }
+          }
+        ],
+        responses: {
+          "200": {
+            description: "Budget fetched successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: { type: "boolean", example: true },
+                    message: { type: "string", example: "Budget fetched successfully" },
+                    data: { $ref: "#/components/schemas/Budget" }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            description: "Budget not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            description: "Unauthorized",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      },
+      patch: {
+        tags: ["Budgets"],
+        summary: "Update budget by ID",
+        description: "Updates an existing budget partially (limitAmount, budgetType, categoryId, dates).",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            description: "Budget UUID",
+            schema: {
+              type: "string",
+              format: "uuid"
+            }
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/UpdateBudgetRequest"
+              }
+            }
+          }
+        },
+        responses: {
+          "200": {
+            description: "Budget updated successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: { type: "boolean", example: true },
+                    message: { type: "string", example: "Budget updated successfully" },
+                    data: { $ref: "#/components/schemas/Budget" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            description: "Invalid update payload or overlapping budget",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            description: "Budget not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            description: "Unauthorized",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      },
+      delete: {
+        tags: ["Budgets"],
+        summary: "Delete budget by ID",
+        description: "Permanently removes a budget belonging to the authenticated user.",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            description: "Budget UUID",
+            schema: {
+              type: "string",
+              format: "uuid"
+            }
+          }
+        ],
+        responses: {
+          "200": {
+            description: "Budget deleted successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: { type: "boolean", example: true },
+                    message: { type: "string", example: "Budget deleted successfully" },
+                    data: { $ref: "#/components/schemas/Budget" }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            description: "Budget not found",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/ErrorResponse" }
