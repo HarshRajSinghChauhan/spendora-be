@@ -25,6 +25,11 @@ app.use(
 // Swagger Documentation
 app.use(swaggerRoutes);
 
+// Health Check Endpoint
+app.get("/healthz", (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoriesRoutes);
