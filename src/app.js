@@ -5,6 +5,7 @@ import authRoutes from "./modules/auth/auth.routes.js";
 import categoriesRoutes from "./modules/categories/categories.routes.js";
 import transactionsRoutes from "./modules/transactions/transactions.routes.js";
 import budgetsRoutes from "./modules/budgets/budgets.routes.js";
+import analyticsRoutes from "./modules/analytics/analytics.routes.js";
 import swaggerRoutes from "./docs/swaggerRoutes.js";
 
 const app = express();
@@ -36,5 +37,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoriesRoutes);
 app.use("/api/transactions", transactionsRoutes);
 app.use("/api/budgets", budgetsRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 export default app;
