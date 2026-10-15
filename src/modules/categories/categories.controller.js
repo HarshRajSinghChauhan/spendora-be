@@ -2,7 +2,12 @@ import categoriesService from "./categories.service.js";
 
 const createCategory = async (req, res) => {
     try {
-        const result = await categoriesService.createCategory({ ...req.body, createdById: req.user.id });
+        const isGlobal = req.user?.role === "ADMIN";
+        const result = await categoriesService.createCategory({
+            ...req.body,
+            createdById: req.user.id,
+            isGlobal
+        });
         res.status(201).json({
             success: true,
             message: "Category created successfully",

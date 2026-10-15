@@ -5,20 +5,23 @@ export const findByNameandType = async ({ name, type, createdById }) => {
         where: {
             name,
             type,
-            createdById
+            OR: [
+                { isGlobal: true },
+                { createdById }
+            ]
         }
     });
 }
 
-export const createCategory = async ({ name, type, createdById }) => {
+export const createCategory = async ({ name, type, createdById, isGlobal = false }) => {
     return prisma.category.create({
         data: {
             name,
             type,
-            createdById
+            createdById,
+            isGlobal
         }
     })
-
 }
 
 export const getAllCategories = async ({ userId, type, page = 1, limit = 10 }) => {
