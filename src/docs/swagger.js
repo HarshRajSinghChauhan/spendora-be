@@ -34,6 +34,10 @@ export const swaggerDocument = {
     {
       name: "Budgets",
       description: "Budget limits, periods, and spending progress tracking"
+    },
+    {
+      name: "Analytics",
+      description: "Dashboard charts, financial analytics, and category breakdowns"
     }
   ],
   components: {
@@ -1585,6 +1589,142 @@ export const swaggerDocument = {
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analytics/income-vs-expenses": {
+      get: {
+        summary: "Get monthly income vs expenses for bar chart",
+        tags: ["Analytics"],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "months",
+            in: "query",
+            description: "Number of rolling months (1-24)",
+            schema: { type: "integer", default: 12 }
+          },
+          {
+            name: "range",
+            in: "query",
+            description: "Range type ('fiscal_year' for Apr-Mar or '12_months')",
+            schema: { type: "string", enum: ["fiscal_year", "12_months"], default: "fiscal_year" }
+          }
+        ],
+        responses: {
+          "200": {
+            description: "Monthly income vs expenses data",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: { type: "boolean", example: true },
+                    data: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          year: { type: "integer" },
+                          month: { type: "integer" },
+                          monthName: { type: "string" },
+                          label: { type: "string" },
+                          fullLabel: { type: "string" },
+                          income: { type: "number" },
+                          expenses: { type: "number" },
+                          net: { type: "number" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analytics/expenses-by-category": {
+      get: {
+        summary: "Get expense breakdown grouped by category for donut chart",
+        tags: ["Analytics"],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "period",
+            in: "query",
+            description: "Time filter",
+            schema: { type: "string", enum: ["this_month", "last_month", "this_year", "all_time", "custom"], default: "this_month" }
+          }
+        ],
+        responses: {
+          "200": {
+            description: "Category breakdown with percentages and amounts",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: { type: "boolean", example: true },
+                    data: {
+                      type: "object",
+                      properties: {
+                        period: { type: "string" },
+                        totalExpenses: { type: "number" },
+                        categories: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              categoryId: { type: "string" },
+                              name: { type: "string" },
+                              amount: { type: "number" },
+                              count: { type: "integer" },
+                              percentage: { type: "number" },
+                              color: { type: "string" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analytics/dashboard-summary": {
+      get: {
+        summary: "Get overall dashboard summary stats",
+        tags: ["Analytics"],
+        security: [{ bearerAuth: [] }],
+        responses: {
+          "200": {
+            description: "Total balance, current month income and expenses",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: { type: "boolean", example: true },
+                    data: {
+                      type: "object",
+                      properties: {
+                        totalBalance: { type: "number" },
+                        allTimeIncome: { type: "number" },
+                        allTimeExpense: { type: "number" },
+                        incomeThisMonth: { type: "number" },
+                        expensesThisMonth: { type: "number" },
+                        netThisMonth: { type: "number" }
+                      }
+                    }
+                  }
+                }
               }
             }
           }
